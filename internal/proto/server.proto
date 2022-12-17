@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package auth;
+
+service Auth{
+    rpc GetPublicKey(Empty) returns (Response);
+}
+
+message Empty{}
+
+message Response{
+    bytes public_key = 1;
+}

@@ -18,7 +18,8 @@ type JWTUserClaims struct {
 	Roles  []interfaces.UserRole `json:"roles"`
 }
 type tokener struct {
-	jwtBuilder *jwt.TokenBuilder
+	jwtTokenBuilder *jwt.TokenBuilder
+	PublicKey       []byte
 }
 
 func New() *tokener {
@@ -26,7 +27,7 @@ func New() *tokener {
 }
 
 func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
-	userToken, err := buildUserJWTToken(u, t.jwtBuilder)
+	userToken, err := buildUserJWTToken(u, t.jwtTokenBuilder)
 	if err != nil {
 		return
 	}
@@ -37,7 +38,7 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 		//"refresh_token": rtToken.String(),
 	})
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	return
@@ -54,15 +55,17 @@ func (t *tokener) tokenBuilderUpdate() (err error) {
 		return
 	}
 
-	signer, err := jwt.NewES256(&privateKey.PublicKey, privateKey)
+	publicKey := privateKey.PublicKey
+	signer, err := jwt.NewES256(&publicKey, privateKey)
 	if err != nil {
 		return
 	}
-	t.jwtBuilder = jwt.NewTokenBuilder(signer)
+	t.jwtTokenBuilder = jwt.NewTokenBuilder(signer)
+	t.PublicKey = elliptic.Marshal(&publicKey, publicKey.X, publicKey.Y)
 	return
 }
 
-func buildUserJWTToken(u interfaces.User, jwtBuilder *jwt.TokenBuilder) (
+func buildUserJWTToken(u interfaces.User, jwtTokenBuilder *jwt.TokenBuilder) (
 	token *jwt.Token, err error) {
 	claims := JWTUserClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -75,9 +78,10 @@ func buildUserJWTToken(u interfaces.User, jwtBuilder *jwt.TokenBuilder) (
 		Roles:  u.Roles,
 	}
 
-	token, err = jwtBuilder.Build(claims)
+	token, err = jwtTokenBuilder.Build(claims)
 	if err != nil {
 		return
 	}
 
+	return
 }
