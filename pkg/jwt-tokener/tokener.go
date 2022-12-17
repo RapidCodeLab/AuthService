@@ -31,11 +31,14 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 	if err != nil {
 		return
 	}
-	//refretsh token
 
+	refreshToken, err := buildRefreshJWTToken(t.jwtTokenBuilder)
+	if err != nil {
+		return
+	}
 	r, err = json.Marshal(map[string]string{
-		"token": userToken.String(),
-		//"refresh_token": rtToken.String(),
+		"token":         userToken.String(),
+		"refresh_token": refreshToken.String(),
 	})
 	if err != nil {
 		return
@@ -82,6 +85,18 @@ func buildUserJWTToken(u interfaces.User, jwtTokenBuilder *jwt.TokenBuilder) (
 	if err != nil {
 		return
 	}
+	return
+}
 
+func buildRefreshJWTToken(jwtTokenBuilder *jwt.TokenBuilder) (
+	token *jwt.Token, err error) {
+	claims := jwt.StandardClaims{
+		Subject: "1",
+		//ExpiresAt: jwt.,
+	}
+	token, err = jwtTokenBuilder.Build(claims)
+	if err != nil {
+		return
+	}
 	return
 }
