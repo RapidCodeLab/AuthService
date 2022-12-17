@@ -1,10 +1,14 @@
 package server
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"net"
 	"net/http"
 
 	"github.com/RapidCodeLab/AuthService/internal/handlers"
+	"github.com/cristalhq/jwt"
 	"github.com/gorilla/mux"
 )
 
@@ -16,7 +20,9 @@ const (
 )
 
 type server struct {
-	http *http.Server
+	http       *http.Server
+	PublickKey []byte
+	jwtBuilder *jwt.TokenBuilder
 }
 
 func New() *server {
@@ -45,5 +51,21 @@ func (s *server) Start() (err error) {
 }
 
 func (s *server) Stop() (err error) {
+	return
+}
+
+func (s *server) TokenBuilderUpdate() (err error) {
+
+	privateKey, err :=
+		ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return
+	}
+
+	signer, err := jwt.NewES256(&privateKey.PublicKey, privateKey)
+	if err != nil {
+		return
+	}
+	s.jwtBuilder = jwt.NewTokenBuilder(signer)
 	return
 }
