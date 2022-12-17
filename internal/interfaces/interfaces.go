@@ -1,29 +1,40 @@
 package interfaces
 
-import (
-	"github.com/cristalhq/jwt/v3"
-)
-
 type JWTokener interface {
-	NewJWT(u UserDTO) ([]byte, error)
+	NewJWT(u User) ([]byte, error)
 	UpdateRT(rt RT) ([]byte, error)
 }
 
 type UserRole int
 
-type UserDTO struct{}
+const (
+	UserRoleSuper UserRole = iota
+	UserRoleAdmin
+	UserRoleRegular
+)
 
-type JWTUserClaims struct {
-	jwt.RegisteredClaims
-	UserID int64      `json:"user_id"`
-	Email  string     `json:"email"`
-	Roles  []UserRole `json:"roles"`
+type UserStatus int
+
+const (
+	UserStatusNew UserStatus = iota
+	UserStatusActive
+	UserStatusBanned
+)
+
+type User struct {
+	ID       int64
+	Email    string
+	Password string
+	Roles    []UserRole
+	Status   UserStatus
 }
 
 type RT struct {
 	RefreshToken []byte `json:"refresh_token"`
 }
 
-type UserService interface{}
+type UserService interface {
+	GetUser(email, password string) error
+}
 
 type Logger interface{}
