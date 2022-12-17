@@ -1,4 +1,4 @@
-package server
+package interfaces
 
 import (
 	"github.com/cristalhq/jwt/v3"
@@ -23,3 +23,7 @@ type JWTUserClaims struct {
 type RT struct {
 	RefreshToken []byte `json:"refresh_token"`
 }
+
+type UserService interface{}
+
+type Logger interface{}
