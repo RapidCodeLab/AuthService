@@ -7,9 +7,9 @@ run:
 	chmod +x .bin/${BINARY_NAME}
 	./.bin/${BINARY_NAME}
 clean:
-  go clean
-  rm .bin/${BINARY_NAME}
+	go clean
+	rm .bin/${BINARY_NAME}
 lint:
-  golangci-lint run
+	golangci-lint run
 test:
-  go test ./...
+	go test ./...

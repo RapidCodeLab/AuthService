@@ -40,8 +40,11 @@ func Login(
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Add("Content-Type", "application/json")
-	w.Write(token)
-
+	_, err = w.Write(token)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		//reason to body
+	}
 }
 
 func Signup(w http.ResponseWriter, r *http.Request)       {}
