@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net"
 	"net/http"
 
@@ -32,7 +33,7 @@ func NewAuthServer(jwtTokener interfaces.JWTokener) *server {
 	}
 }
 
-func (s *server) Start() (err error) {
+func (s *server) Start(ctx context.Context) (err error) {
 
 	serverErrors := make(chan error, 1)
 
@@ -74,6 +75,15 @@ func (s *server) Start() (err error) {
 
 	go func() {
 		serverErrors <- s.grpc.Serve(grpcListener)
+	}()
+
+	go func() {
+		<-ctx.Done()
+		s.grpc.GracefulStop()
+		err := s.http.Shutdown(ctx)
+		if err != nil {
+			//log err
+		}
 	}()
 
 	err = <-serverErrors

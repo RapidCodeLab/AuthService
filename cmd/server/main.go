@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,10 +20,6 @@ func main() {
 
 	s := server.NewAuthServer(jwtTokener)
 
-	go func() {
-		s.Start()
-	}()
-
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
 
@@ -31,6 +28,11 @@ func main() {
 		s.Stop()
 		cancel()
 	}()
+
+	err := s.Start(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//start server with context
 }
