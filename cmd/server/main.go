@@ -17,7 +17,7 @@ func main() {
 
 	jwtTokener := jwttokener.New()
 
-	s := server.New(jwtTokener)
+	s := server.NewAuthServer(jwtTokener)
 
 	go func() {
 		s.Start()

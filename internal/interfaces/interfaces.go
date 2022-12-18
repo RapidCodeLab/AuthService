@@ -3,6 +3,7 @@ package interfaces
 type JWTokener interface {
 	NewJWT(u User) ([]byte, error)
 	UpdateRT(rt RT) ([]byte, error)
+	GetPublicKey() []byte
 }
 
 type UserRole int

@@ -26,6 +26,10 @@ func New() *tokener {
 	return &tokener{}
 }
 
+func (t *tokener) GetPublicKey() []byte {
+	return t.PublicKey
+}
+
 func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 	userToken, err := buildUserJWTToken(u, t.jwtTokenBuilder)
 	if err != nil {

@@ -26,7 +26,7 @@ type server struct {
 	jwtTokener interfaces.JWTokener
 }
 
-func New(jwtTokener interfaces.JWTokener) *server {
+func NewAuthServer(jwtTokener interfaces.JWTokener) *server {
 	return &server{
 		jwtTokener: jwtTokener,
 	}
@@ -66,7 +66,12 @@ func (s *server) Start() (err error) {
 	opts := []grpc.ServerOption{}
 	s.grpc = grpc.NewServer(opts...)
 
-	authgrpcserver.RegisterAuthServer(s.grpc, &grpcServer{})
+	grpcServer := NewGRPCServer(s.jwtTokener)
+
+	authgrpcserver.RegisterAuthServer(
+		s.grpc,
+		grpcServer)
+
 	go func() {
 		serverErrors <- s.grpc.Serve(grpcListener)
 	}()
