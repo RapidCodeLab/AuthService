@@ -6,7 +6,10 @@ import (
 
 	"github.com/RapidCodeLab/AuthService/internal/handlers"
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
+	"github.com/RapidCodeLab/AuthService/pkg/authgrpcserver"
+
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -18,6 +21,7 @@ const (
 
 type server struct {
 	http       *http.Server
+	grpc       *grpc.Server
 	PublickKey []byte
 	jwtTokener interfaces.JWTokener
 }
@@ -30,6 +34,9 @@ func New(jwtTokener interfaces.JWTokener) *server {
 
 func (s *server) Start() (err error) {
 
+	serverErrors := make(chan error, 1)
+
+	//http server start
 	r := mux.NewRouter()
 
 	r.HandleFunc(LoginPath, func(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +54,25 @@ func (s *server) Start() (err error) {
 	if err != nil {
 		return
 	}
+	go func() {
+		serverErrors <- s.http.Serve(listener)
+	}()
 
-	return s.http.Serve(listener)
+	//grpc server start
+	grpcListener, err := net.Listen("", "")
+	if err != nil {
+		return
+	}
+	opts := []grpc.ServerOption{}
+	s.grpc = grpc.NewServer(opts...)
+
+	authgrpcserver.RegisterAuthServer(s.grpc, &grpcServer{})
+	go func() {
+		serverErrors <- s.grpc.Serve(grpcListener)
+	}()
+
+	err = <-serverErrors
+	return
 }
 
 func (s *server) Stop() (err error) {
