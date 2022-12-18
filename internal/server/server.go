@@ -89,7 +89,3 @@ func (s *server) Start(ctx context.Context) (err error) {
 	err = <-serverErrors
 	return
 }
-
-func (s *server) Stop() (err error) {
-	return
-}

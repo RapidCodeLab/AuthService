@@ -25,7 +25,6 @@ func main() {
 
 	go func() {
 		<-gracefulStop
-		s.Stop()
 		cancel()
 	}()
 
@@ -34,5 +33,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//start server with context
 }
