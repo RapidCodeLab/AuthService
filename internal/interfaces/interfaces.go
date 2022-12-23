@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type JWTokener interface {
 	NewJWT(u User) ([]byte, error)
 	UpdateRT(rt RT) ([]byte, error)
@@ -35,7 +37,7 @@ type RT struct {
 }
 
 type UserService interface {
-	GetUser(email, password string) (User, error)
+	GetUser(ctx context.Context, email, password string) (User, error)
 }
 
 type Configurator interface {
@@ -43,6 +45,7 @@ type Configurator interface {
 	GetHTTPServerListenAddr() string
 	GetGRPCServerListenNetwork() string
 	GetGRPCServerListenAddr() string
+	GetGRPCUserServiceAddr() string
 }
 
 type Logger interface{}

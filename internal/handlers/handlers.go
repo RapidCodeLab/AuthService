@@ -30,7 +30,7 @@ func Login(
 	}
 
 	//get user from UserService gRPC
-	user, err := userService.GetUser(loginUserDTO.Email, loginUserDTO.Password)
+	user, err := userService.GetUser(r.Context(), loginUserDTO.Email, loginUserDTO.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		//reason to body

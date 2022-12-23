@@ -18,3 +18,7 @@ func (c *Configurator) GetGRPCServerListenNetwork() (d string) {
 func (c *Configurator) GetGRPCServerListenAddr() (d string) {
 	return
 }
+
+func (c *Configurator) GetGRPCUserServiceAddr() (d string) {
+	return
+}

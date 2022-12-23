@@ -22,9 +22,11 @@ func main() {
 
 	jwtTokener := jwttokener.New()
 
-	userService := userservice.New()
-
-	s := server.NewAuthServer(jwtTokener, c, userService)
+	us, err := userservice.New(ctx, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := server.NewAuthServer(jwtTokener, c, us)
 
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
@@ -34,7 +36,7 @@ func main() {
 		cancel()
 	}()
 
-	err := s.Start(ctx)
+	err = s.Start(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
