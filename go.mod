@@ -2,10 +2,10 @@ module github.com/RapidCodeLab/AuthService
 
 go 1.19
 
-
 replace github.com/RapidCodeLab/AuthService/internal/server => ./internal/server
 
 replace github.com/RapidCodeLab/AuthService/pkg/jwt-tokener => ./pkg/jwt-tokener
+
 require (
 	github.com/cristalhq/jwt v1.2.0
 	github.com/google/uuid v1.3.0
