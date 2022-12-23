@@ -35,7 +35,14 @@ type RT struct {
 }
 
 type UserService interface {
-	GetUser(email, password string) error
+	GetUser(email, password string) (User, error)
+}
+
+type Configurator interface {
+	GetHTTPServerListenNetwork() string
+	GetHTTPServerListenAddr() string
+	GetGRPCServerListenNetwork() string
+	GetGRPCServerListenAddr() string
 }
 
 type Logger interface{}

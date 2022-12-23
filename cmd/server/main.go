@@ -18,7 +18,7 @@ func main() {
 
 	jwtTokener := jwttokener.New()
 
-	s := server.NewAuthServer(jwtTokener)
+	s := server.NewAuthServer(jwtTokener, nil)
 
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)

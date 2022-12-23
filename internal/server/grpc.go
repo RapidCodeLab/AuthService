@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
-	"github.com/RapidCodeLab/AuthService/pkg/authgrpcserver"
+	auth_grpc "github.com/RapidCodeLab/AuthService/pkg/auth-grpc"
 )
 
 type grpcServer struct {
 	jwtTokener interfaces.JWTokener
-	authgrpcserver.UnimplementedAuthServer
+	auth_grpc.UnimplementedAuthGPRCServer
 }
 
 func NewGRPCServer(jwtTokener interfaces.JWTokener) *grpcServer {
@@ -20,8 +20,8 @@ func NewGRPCServer(jwtTokener interfaces.JWTokener) *grpcServer {
 
 func (gs *grpcServer) GetPublicKey(
 	ctx context.Context,
-	empty *authgrpcserver.Empty) (
-	r *authgrpcserver.Response,
+	empty *auth_grpc.Empty) (
+	r *auth_grpc.Response,
 	err error) {
 
 	r.PublicKey = gs.jwtTokener.GetPublicKey()

@@ -7,7 +7,7 @@ import (
 
 	"github.com/RapidCodeLab/AuthService/internal/handlers"
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
-	"github.com/RapidCodeLab/AuthService/pkg/authgrpcserver"
+	auth_grpc "github.com/RapidCodeLab/AuthService/pkg/auth-grpc"
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -21,15 +21,18 @@ const (
 )
 
 type server struct {
-	http       *http.Server
-	grpc       *grpc.Server
-	PublickKey []byte
-	jwtTokener interfaces.JWTokener
+	http         *http.Server
+	grpc         *grpc.Server
+	configurator interfaces.Configurator
+	PublickKey   []byte
+	jwtTokener   interfaces.JWTokener
 }
 
-func NewAuthServer(jwtTokener interfaces.JWTokener) *server {
+func NewAuthServer(jwtTokener interfaces.JWTokener,
+	configurator interfaces.Configurator) *server {
 	return &server{
-		jwtTokener: jwtTokener,
+		jwtTokener:   jwtTokener,
+		configurator: configurator,
 	}
 }
 
@@ -41,7 +44,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	r := mux.NewRouter()
 
 	r.HandleFunc(LoginPath, func(w http.ResponseWriter, r *http.Request) {
-		handlers.Login(w, r, s.jwtTokener)
+		handlers.Login(w, r, s.jwtTokener, nil)
 	})
 	r.HandleFunc(SignupPath, handlers.Signup)
 	r.HandleFunc(RefreshTokenPath, handlers.RefreshToken)
@@ -51,7 +54,9 @@ func (s *server) Start(ctx context.Context) (err error) {
 		Handler: r,
 	}
 
-	listener, err := net.Listen("", "")
+	listener, err := net.Listen(
+		s.configurator.GetHTTPServerListenAddr(),
+		s.configurator.GetHTTPServerListenAddr())
 	if err != nil {
 		return
 	}
@@ -60,7 +65,9 @@ func (s *server) Start(ctx context.Context) (err error) {
 	}()
 
 	//grpc server start
-	grpcListener, err := net.Listen("", "")
+	grpcListener, err := net.Listen(
+		s.configurator.GetGRPCServerListenNetwork(),
+		s.configurator.GetGRPCServerListenAddr())
 	if err != nil {
 		return
 	}
@@ -69,7 +76,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 
 	grpcServer := NewGRPCServer(s.jwtTokener)
 
-	authgrpcserver.RegisterAuthServer(
+	auth_grpc.RegisterAuthGPRCServer(
 		s.grpc,
 		grpcServer)
 

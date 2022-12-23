@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package authgrpcserver;
+package auth_grpc;
 
-option go_package = "/authgrpcserver";
+option go_package = "/auth-grpc";
 
-service Auth{
+service AuthGPRC{
     rpc GetPublicKey(Empty) returns (Response);
 }
 

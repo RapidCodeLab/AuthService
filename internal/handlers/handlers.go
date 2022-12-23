@@ -15,7 +15,8 @@ type LoginUserDTO struct {
 func Login(
 	w http.ResponseWriter,
 	r *http.Request,
-	jwTokener interfaces.JWTokener) {
+	jwTokener interfaces.JWTokener,
+	userService interfaces.UserService) {
 
 	var loginUserDTO LoginUserDTO
 	decoder := json.NewDecoder(r.Body)
@@ -29,7 +30,12 @@ func Login(
 	}
 
 	//get user from UserService gRPC
-	var user interfaces.User
+	user, err := userService.GetUser(loginUserDTO.Email, loginUserDTO.Password)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		//reason to body
+		return
+	}
 
 	token, err := jwTokener.NewJWT(user)
 	if err != nil {

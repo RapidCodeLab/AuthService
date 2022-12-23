@@ -13,3 +13,8 @@ lint:
 	golangci-lint run
 test:
 	go test ./...
+protos:
+	protoc --go_out ./pkg ./proto/auth.proto
+	protoc --go-grpc_out ./pkg ./proto/auth.proto	
+	protoc --go_out ./pkg ./proto/user.proto
+	protoc --go-grpc_out ./pkg ./proto/user.proto
