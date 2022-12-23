@@ -7,22 +7,27 @@ import (
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
 )
 
-type LoginUserDTO struct {
+type SigninUserDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func Login(
+type SignupUserDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func Signin(
 	w http.ResponseWriter,
 	r *http.Request,
 	jwTokener interfaces.JWTokener,
 	userService interfaces.UserService) {
 
-	var loginUserDTO LoginUserDTO
+	var signinUserDTO SigninUserDTO
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	err := decoder.Decode(&loginUserDTO)
+	err := decoder.Decode(&signinUserDTO)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		//reason to body
@@ -30,7 +35,9 @@ func Login(
 	}
 
 	//get user from UserService gRPC
-	user, err := userService.GetUser(r.Context(), loginUserDTO.Email, loginUserDTO.Password)
+	user, err := userService.GetUser(r.Context(),
+		signinUserDTO.Email,
+		signinUserDTO.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		//reason to body
@@ -53,6 +60,39 @@ func Login(
 	}
 }
 
-func Signup(w http.ResponseWriter, r *http.Request)       {}
+func Signup(w http.ResponseWriter, r *http.Request) {
+
+	var signupUserDTO SignupUserDTO
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&signupUserDTO)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		//reason to body
+		return
+	}
+
+	//create user
+	var u interfaces.User
+
+	res := struct {
+		Email string
+	}{
+		Email: u.Email,
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Content-Type", "application/json")
+	enc := json.NewEncoder(w)
+	err = enc.Encode(res)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		//reason to body
+		return
+	}
+
+}
+
 func RefreshToken(w http.ResponseWriter, r *http.Request) {}
 func Logout(w http.ResponseWriter, r *http.Request)       {}

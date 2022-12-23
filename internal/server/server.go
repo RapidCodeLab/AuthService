@@ -47,7 +47,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	r := mux.NewRouter()
 
 	r.HandleFunc(LoginPath, func(w http.ResponseWriter, r *http.Request) {
-		handlers.Login(w, r, s.jwtTokener, s.userService)
+		handlers.Signin(w, r, s.jwtTokener, s.userService)
 	})
 	r.HandleFunc(SignupPath, handlers.Signup)
 	r.HandleFunc(RefreshTokenPath, handlers.RefreshToken)
