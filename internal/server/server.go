@@ -26,13 +26,16 @@ type server struct {
 	configurator interfaces.Configurator
 	PublickKey   []byte
 	jwtTokener   interfaces.JWTokener
+	userService  interfaces.UserService
 }
 
 func NewAuthServer(jwtTokener interfaces.JWTokener,
-	configurator interfaces.Configurator) *server {
+	configurator interfaces.Configurator,
+	userService interfaces.UserService) *server {
 	return &server{
 		jwtTokener:   jwtTokener,
 		configurator: configurator,
+		userService:  userService,
 	}
 }
 
@@ -44,7 +47,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	r := mux.NewRouter()
 
 	r.HandleFunc(LoginPath, func(w http.ResponseWriter, r *http.Request) {
-		handlers.Login(w, r, s.jwtTokener, nil)
+		handlers.Login(w, r, s.jwtTokener, s.userService)
 	})
 	r.HandleFunc(SignupPath, handlers.Signup)
 	r.HandleFunc(RefreshTokenPath, handlers.RefreshToken)
