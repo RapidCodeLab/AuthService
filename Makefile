@@ -1,9 +1,9 @@
 BINARY_NAME=app
 
 build:
-	go build -o .bin/${BINARY_NAME} cmd/server/main.go 
+	go build -o .bin/${BINARY_NAME} cmd/server
 run:
-	go build -o .bin/${BINARY_NAME} cmd/server/main.go 
+	go build -o .bin/${BINARY_NAME} cmd/server 
 	chmod +x .bin/${BINARY_NAME}
 	./.bin/${BINARY_NAME}
 clean:
