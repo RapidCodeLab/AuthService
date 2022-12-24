@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
-	"github.com/cristalhq/jwt"
+	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -19,13 +19,13 @@ type RefreshTokenStorage interface {
 }
 
 type JWTUserClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	UserID int64                 `json:"user_id"`
 	Email  string                `json:"email"`
 	Roles  []interfaces.UserRole `json:"roles"`
 }
 type tokener struct {
-	jwtTokenBuilder *jwt.TokenBuilder
+	jwtTokenBuilder *jwt.Builder
 	jwtSigner       jwt.Signer
 	PublicKey       []byte
 	rtStorage       RefreshTokenStorage
@@ -79,11 +79,6 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 
 func (t *tokener) RefreshJWT(rt interfaces.RefreshToken) (r []byte, err error) {
 
-	_, err = jwt.ParseAndVerify(rt.RefreshToken, t.jwtSigner)
-	if err != nil {
-		return
-	}
-
 	return
 }
 
@@ -96,20 +91,20 @@ func (t *tokener) tokenBuilderUpdate() (err error) {
 	}
 
 	publicKey := privateKey.PublicKey
-	signer, err := jwt.NewES256(&publicKey, privateKey)
+	signer, err := jwt.NewSignerES(jwt.ES256, privateKey)
 	if err != nil {
 		return
 	}
 	t.jwtSigner = signer
-	t.jwtTokenBuilder = jwt.NewTokenBuilder(signer)
+	t.jwtTokenBuilder = jwt.NewBuilder(signer)
 	t.PublicKey = elliptic.Marshal(&publicKey, publicKey.X, publicKey.Y)
 	return
 }
 
-func buildUserJWTToken(u interfaces.User, jwtTokenBuilder *jwt.TokenBuilder) (
+func buildUserJWTToken(u interfaces.User, jwtBuilder *jwt.Builder) (
 	token *jwt.Token, err error) {
 	claims := JWTUserClaims{
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			ID:       uuid.NewString(),
 			Audience: []string{"users"},
 			//ExpiresAt: jwt.,
@@ -119,20 +114,20 @@ func buildUserJWTToken(u interfaces.User, jwtTokenBuilder *jwt.TokenBuilder) (
 		Roles:  u.Roles,
 	}
 
-	token, err = jwtTokenBuilder.Build(claims)
+	token, err = jwtBuilder.Build(claims)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func buildRefreshJWTToken(jwtTokenBuilder *jwt.TokenBuilder) (
+func buildRefreshJWTToken(jwtBuilder *jwt.Builder) (
 	token *jwt.Token, err error) {
-	claims := jwt.StandardClaims{
+	claims := jwt.RegisteredClaims{
 		Subject: "1",
 		//ExpiresAt: jwt.,
 	}
-	token, err = jwtTokenBuilder.Build(claims)
+	token, err = jwtBuilder.Build(claims)
 	if err != nil {
 		return
 	}
