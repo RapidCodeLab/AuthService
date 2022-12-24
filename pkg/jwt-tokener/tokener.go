@@ -20,6 +20,7 @@ type JWTUserClaims struct {
 }
 type tokener struct {
 	jwtTokenBuilder *jwt.TokenBuilder
+	jwtSigner       jwt.Signer
 	PublicKey       []byte
 }
 
@@ -68,7 +69,14 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 
 	return
 }
-func (t *tokener) UpdateRT(rt interfaces.RT) (r []byte, err error) {
+
+func (t *tokener) RefreshJWT(rt interfaces.RefreshToken) (r []byte, err error) {
+
+	_, err = jwt.ParseAndVerify(rt.RefreshToken, t.jwtSigner)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -85,6 +93,7 @@ func (t *tokener) tokenBuilderUpdate() (err error) {
 	if err != nil {
 		return
 	}
+	t.jwtSigner = signer
 	t.jwtTokenBuilder = jwt.NewTokenBuilder(signer)
 	t.PublicKey = elliptic.Marshal(&publicKey, publicKey.X, publicKey.Y)
 	return

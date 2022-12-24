@@ -4,7 +4,7 @@ import "context"
 
 type JWTokener interface {
 	NewJWT(u User) ([]byte, error)
-	UpdateRT(rt RT) ([]byte, error)
+	RefreshJWT(rt RefreshToken) ([]byte, error)
 	GetPublicKey() []byte
 }
 
@@ -32,8 +32,14 @@ type User struct {
 	Status   UserStatus
 }
 
-type RT struct {
+type RefreshToken struct {
 	RefreshToken []byte `json:"refresh_token"`
+}
+
+type RefreshTokenService interface {
+	Set(RefreshToken) error
+	Get(RefreshToken) (User, error)
+	Delete(RefreshToken) error
 }
 
 type UserService interface {
