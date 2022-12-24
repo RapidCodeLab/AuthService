@@ -1,6 +1,7 @@
 package jwttokener
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -13,9 +14,9 @@ import (
 )
 
 type RefreshTokenStorage interface {
-	Set(token, user []byte) error
-	Get(token []byte) (user []byte, err error)
-	Delete(token []byte) error
+	SetValueByKey(ctx context.Context, key string, user []byte) error
+	GetValueByKey(ctx context.Context, key string) (user []byte, err error)
+	DeleteByKey(ctx context.Context, key string) error
 }
 
 type JWTUserClaims struct {
@@ -31,9 +32,12 @@ type tokener struct {
 	rtStorage       RefreshTokenStorage
 }
 
-func New() (t *tokener, err error) {
+func New(s RefreshTokenStorage) (t *tokener, err error) {
 
-	t = &tokener{}
+	t = &tokener{
+		rtStorage: s,
+	}
+
 	err = t.tokenBuilderUpdate()
 	if err != nil {
 		return
@@ -83,9 +87,10 @@ func (t *tokener) RefreshJWT(rt interfaces.RefreshToken) (r []byte, err error) {
 }
 
 func (t *tokener) GetRefreshToken(
+	ctx context.Context,
 	rt interfaces.RefreshToken,
 ) (u interfaces.User, err error) {
-	data, err := t.rtStorage.Get(rt.RefreshToken)
+	data, err := t.rtStorage.GetValueByKey(ctx, string(rt.RefreshToken))
 	if err != nil {
 		return
 	}
@@ -96,6 +101,7 @@ func (t *tokener) GetRefreshToken(
 }
 
 func (t *tokener) SetRefreshToken(
+	ctx context.Context,
 	rt interfaces.RefreshToken,
 	u interfaces.User) (err error) {
 
@@ -104,13 +110,14 @@ func (t *tokener) SetRefreshToken(
 		return
 	}
 
-	return t.rtStorage.Set(rt.RefreshToken, data)
+	return t.rtStorage.SetValueByKey(ctx, string(rt.RefreshToken), data)
 }
 
 func (t *tokener) DeleteRefreshToken(
+	ctx context.Context,
 	rt interfaces.RefreshToken) (err error) {
 
-	return t.rtStorage.Delete(rt.RefreshToken)
+	return t.rtStorage.DeleteByKey(ctx, string(rt.RefreshToken))
 }
 
 func (t *tokener) tokenBuilderUpdate() (err error) {

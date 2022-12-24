@@ -10,6 +10,7 @@ import (
 	"github.com/RapidCodeLab/AuthService/internal/server"
 	"github.com/RapidCodeLab/AuthService/pkg/configurator"
 	jwttokener "github.com/RapidCodeLab/AuthService/pkg/jwt-tokener"
+	mockskvtorage "github.com/RapidCodeLab/AuthService/pkg/mocks/kv-storage"
 	userservice "github.com/RapidCodeLab/AuthService/pkg/services/user"
 )
 
@@ -20,7 +21,9 @@ func main() {
 
 	c := configurator.New()
 
-	jwtTokener, err := jwttokener.New()
+	kv := mockskvtorage.New()
+
+	jwtTokener, err := jwttokener.New(kv)
 	if err != nil {
 		log.Fatal(err)
 	}

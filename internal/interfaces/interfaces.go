@@ -6,9 +6,9 @@ type JWTokener interface {
 	NewJWT(User) ([]byte, error)
 	RefreshJWT(RefreshToken) ([]byte, error)
 	GetPublicKey() []byte
-	GetRefreshToken(RefreshToken) (User, error)
-	SetRefreshToken(RefreshToken, User) error
-	DeleteRefreshToken(RefreshToken) error
+	GetRefreshToken(context.Context, RefreshToken) (User, error)
+	SetRefreshToken(context.Context, RefreshToken, User) error
+	DeleteRefreshToken(context.Context, RefreshToken) error
 }
 
 type UserRole int
