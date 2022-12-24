@@ -20,7 +20,10 @@ func main() {
 
 	c := configurator.New()
 
-	jwtTokener := jwttokener.New()
+	jwtTokener, err := jwttokener.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	us, err := userservice.New(ctx, c)
 	if err != nil {

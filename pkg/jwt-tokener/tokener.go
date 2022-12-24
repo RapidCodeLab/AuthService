@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/json"
+	"time"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
 	"github.com/cristalhq/jwt"
@@ -22,8 +23,25 @@ type tokener struct {
 	PublicKey       []byte
 }
 
-func New() *tokener {
-	return &tokener{}
+func New() (t *tokener, err error) {
+
+	t = &tokener{}
+	err = t.tokenBuilderUpdate()
+	if err != nil {
+		return
+	}
+
+	go func() {
+		ticker := time.NewTicker(3600 * time.Second)
+		for range ticker.C {
+			err = t.tokenBuilderUpdate()
+			if err != nil {
+				//log error
+			}
+		}
+	}()
+
+	return
 }
 
 func (t *tokener) GetPublicKey() []byte {
