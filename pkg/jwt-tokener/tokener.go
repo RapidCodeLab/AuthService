@@ -13,7 +13,7 @@ import (
 )
 
 type RefreshTokenStorage interface {
-	Set(token []byte) error
+	Set(token, user []byte) error
 	Get(token []byte) (user []byte, err error)
 	Delete(token []byte) error
 }
@@ -82,6 +82,37 @@ func (t *tokener) RefreshJWT(rt interfaces.RefreshToken) (r []byte, err error) {
 	return
 }
 
+func (t *tokener) GetRefreshToken(
+	rt interfaces.RefreshToken,
+) (u interfaces.User, err error) {
+	data, err := t.rtStorage.Get(rt.RefreshToken)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(data, &u)
+
+	return
+}
+
+func (t *tokener) SetRefreshToken(
+	rt interfaces.RefreshToken,
+	u interfaces.User) (err error) {
+
+	data, err := json.Marshal(u)
+	if err != nil {
+		return
+	}
+
+	return t.rtStorage.Set(rt.RefreshToken, data)
+}
+
+func (t *tokener) DeleteRefreshToken(
+	rt interfaces.RefreshToken) (err error) {
+
+	return t.rtStorage.Delete(rt.RefreshToken)
+}
+
 func (t *tokener) tokenBuilderUpdate() (err error) {
 
 	privateKey, err :=
@@ -107,29 +138,22 @@ func buildUserJWTToken(u interfaces.User, jwtBuilder *jwt.Builder) (
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:       uuid.NewString(),
 			Audience: []string{"users"},
-			//ExpiresAt: jwt.,
+			ExpiresAt: jwt.NewNumericDate(
+				time.Now().Add(time.Minute * 15)),
 		},
 		UserID: u.ID,
 		Email:  u.Email,
 		Roles:  u.Roles,
 	}
 
-	token, err = jwtBuilder.Build(claims)
-	if err != nil {
-		return
-	}
-	return
+	return jwtBuilder.Build(claims)
 }
 
 func buildRefreshJWTToken(jwtBuilder *jwt.Builder) (
 	token *jwt.Token, err error) {
 	claims := jwt.RegisteredClaims{
-		Subject: "1",
-		//ExpiresAt: jwt.,
+		Subject:   "1",
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 	}
-	token, err = jwtBuilder.Build(claims)
-	if err != nil {
-		return
-	}
-	return
+	return jwtBuilder.Build(claims)
 }
