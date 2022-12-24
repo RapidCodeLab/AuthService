@@ -12,6 +12,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type RefreshTokenStorage interface {
+	Set(token []byte) error
+	Get(token []byte) (user []byte, err error)
+	Delete(token []byte) error
+}
+
 type JWTUserClaims struct {
 	jwt.StandardClaims
 	UserID int64                 `json:"user_id"`
@@ -22,6 +28,7 @@ type tokener struct {
 	jwtTokenBuilder *jwt.TokenBuilder
 	jwtSigner       jwt.Signer
 	PublicKey       []byte
+	rtStorage       RefreshTokenStorage
 }
 
 func New() (t *tokener, err error) {

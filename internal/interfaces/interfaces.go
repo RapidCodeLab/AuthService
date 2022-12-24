@@ -3,9 +3,12 @@ package interfaces
 import "context"
 
 type JWTokener interface {
-	NewJWT(u User) ([]byte, error)
-	RefreshJWT(rt RefreshToken) ([]byte, error)
+	NewJWT(User) ([]byte, error)
+	RefreshJWT(RefreshToken) ([]byte, error)
 	GetPublicKey() []byte
+	GetRefreshToken(RefreshToken) (User, error)
+	SetRefreshToken(RefreshToken, User) error
+	DeleteRefreshToken(RefreshToken) error
 }
 
 type UserRole int
@@ -34,12 +37,6 @@ type User struct {
 
 type RefreshToken struct {
 	RefreshToken []byte `json:"refresh_token"`
-}
-
-type RefreshTokenService interface {
-	Set(RefreshToken) error
-	Get(RefreshToken) (User, error)
-	Delete(RefreshToken) error
 }
 
 type UserService interface {
