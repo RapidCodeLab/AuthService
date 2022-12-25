@@ -53,3 +53,7 @@ type Configurator interface {
 }
 
 type Logger interface{}
+
+type EventProducer interface {
+	Send(msg []byte)
+}
