@@ -41,6 +41,7 @@ type RefreshToken struct {
 
 type UserService interface {
 	GetUser(ctx context.Context, email, password string) (User, error)
+	CreateUser(ctx context.Context, email, password string, role int) (User, error)
 }
 
 type Configurator interface {

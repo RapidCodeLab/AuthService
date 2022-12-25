@@ -53,3 +53,31 @@ func (s *Service) GetUser(ctx context.Context,
 
 	return
 }
+
+func (s *Service) CreateUser(
+	ctx context.Context,
+	email,
+	password string,
+	role int) (u interfaces.User, err error) {
+
+	req := &user_grpc.UserRequest{
+		Email:    email,
+		Password: password,
+		Role:     int64(role),
+	}
+
+	res, err := s.client.CreateUser(ctx, req)
+	if err != nil {
+		return
+	}
+
+	u.ID = res.GetId()
+	u.Email = res.GetEmail()
+	u.Status = interfaces.UserStatus(res.GetUserStatus())
+
+	for _, role := range res.GetUserRoles() {
+		u.Roles = append(u.Roles, interfaces.UserRole(role))
+	}
+
+	return
+}

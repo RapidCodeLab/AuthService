@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserGPRCClient interface {
 	GetUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	CreateUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 }
 
 type userGPRCClient struct {
@@ -42,11 +43,21 @@ func (c *userGPRCClient) GetUser(ctx context.Context, in *UserRequest, opts ...g
 	return out, nil
 }
 
+func (c *userGPRCClient) CreateUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, "/user_grpc.UserGPRC/CreateUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserGPRCServer is the server API for UserGPRC service.
 // All implementations must embed UnimplementedUserGPRCServer
 // for forward compatibility
 type UserGPRCServer interface {
 	GetUser(context.Context, *UserRequest) (*UserResponse, error)
+	CreateUser(context.Context, *UserRequest) (*UserResponse, error)
 	mustEmbedUnimplementedUserGPRCServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedUserGPRCServer struct {
 
 func (UnimplementedUserGPRCServer) GetUser(context.Context, *UserRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedUserGPRCServer) CreateUser(context.Context, *UserRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
 func (UnimplementedUserGPRCServer) mustEmbedUnimplementedUserGPRCServer() {}
 
@@ -88,6 +102,24 @@ func _UserGPRC_GetUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserGPRC_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserGPRCServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user_grpc.UserGPRC/CreateUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserGPRCServer).CreateUser(ctx, req.(*UserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserGPRC_ServiceDesc is the grpc.ServiceDesc for UserGPRC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +130,10 @@ var UserGPRC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUser",
 			Handler:    _UserGPRC_GetUser_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _UserGPRC_CreateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

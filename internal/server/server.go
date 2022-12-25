@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	LoginPath        = ""
-	SignupPath       = ""
-	RefreshTokenPath = ""
-	LogoutPath       = ""
+	SigninPath       = "/auth/signin"
+	SignupPath       = "/auth/signup"
+	RefreshTokenPath = "/auth/refresh"
+	SignoutPath      = "/auth/signout"
 )
 
 type server struct {
@@ -46,12 +46,16 @@ func (s *server) Start(ctx context.Context) (err error) {
 	//http server start
 	r := mux.NewRouter()
 
-	r.HandleFunc(LoginPath, func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc(SigninPath, func(w http.ResponseWriter, r *http.Request) {
 		handlers.Signin(w, r, s.jwtTokener, s.userService)
 	})
-	r.HandleFunc(SignupPath, handlers.Signup)
+
+	r.HandleFunc(SignupPath, func(w http.ResponseWriter, r *http.Request) {
+		handlers.Signup(w, r, s.userService)
+	})
+
 	r.HandleFunc(RefreshTokenPath, handlers.RefreshToken)
-	r.HandleFunc(LogoutPath, handlers.Logout)
+	r.HandleFunc(SignoutPath, handlers.Logout)
 
 	s.http = &http.Server{
 		Handler: r,

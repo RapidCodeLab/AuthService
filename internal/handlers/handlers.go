@@ -15,6 +15,7 @@ type SigninUserDTO struct {
 type SignupUserDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     int    `json:"role"`
 }
 
 func Signin(
@@ -35,7 +36,7 @@ func Signin(
 	}
 
 	//get user from UserService gRPC
-	user, err := userService.GetUser(r.Context(),
+	u, err := userService.GetUser(r.Context(),
 		signinUserDTO.Email,
 		signinUserDTO.Password)
 	if err != nil {
@@ -44,7 +45,7 @@ func Signin(
 		return
 	}
 
-	token, err := jwTokener.NewJWT(user)
+	token, err := jwTokener.NewJWT(u)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		//reason to body
@@ -60,7 +61,10 @@ func Signin(
 	}
 }
 
-func Signup(w http.ResponseWriter, r *http.Request) {
+func Signup(
+	w http.ResponseWriter,
+	r *http.Request,
+	userService interfaces.UserService) {
 
 	var signupUserDTO SignupUserDTO
 	decoder := json.NewDecoder(r.Body)
@@ -74,10 +78,19 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//create user
-	var u interfaces.User
+	//get user from UserService gRPC
+	u, err := userService.CreateUser(r.Context(),
+		signupUserDTO.Email,
+		signupUserDTO.Password,
+		signupUserDTO.Role)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		//reason to body
+		return
+	}
 
 	res := struct {
-		Email string
+		Email string `json:"email"`
 	}{
 		Email: u.Email,
 	}
