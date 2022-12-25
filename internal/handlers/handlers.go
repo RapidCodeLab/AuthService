@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
@@ -41,6 +42,7 @@ func Signin(
 		signinUserDTO.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
+		log.Println(err)
 		//reason to body
 		return
 	}

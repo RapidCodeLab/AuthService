@@ -62,7 +62,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	}
 
 	listener, err := net.Listen(
-		s.configurator.GetHTTPServerListenAddr(),
+		s.configurator.GetHTTPServerListenNetwork(),
 		s.configurator.GetHTTPServerListenAddr())
 	if err != nil {
 		return

@@ -17,7 +17,7 @@ message UserRequest{
 }
 
 message UserResponse{
-    int64 id = 1;
+    string id = 1;
     string email = 2;
     UserStatus user_status = 3;
     repeated UserRoles user_roles = 4;

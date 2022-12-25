@@ -21,7 +21,7 @@ type RefreshTokenStorage interface {
 
 type JWTUserClaims struct {
 	jwt.RegisteredClaims
-	UserID int64                 `json:"user_id"`
+	UserID string                `json:"user_id"`
 	Email  string                `json:"email"`
 	Roles  []interfaces.UserRole `json:"roles"`
 }
