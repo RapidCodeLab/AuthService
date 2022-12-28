@@ -2,10 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
+)
+
+const (
+	SigninPath       = "/auth/signin"
+	SignupPath       = "/auth/signup"
+	RefreshTokenPath = "/auth/refresh"
+	SignoutPath      = "/auth/signout"
 )
 
 type SigninUserDTO struct {
@@ -33,6 +40,7 @@ func Signin(
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		//reason to body
+		fmt.Printf("decoder err: %+v", err)
 		return
 	}
 
@@ -42,7 +50,8 @@ func Signin(
 		signinUserDTO.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
-		log.Println(err)
+
+		fmt.Printf("user service err: %+v", err)
 		//reason to body
 		return
 	}
@@ -51,6 +60,8 @@ func Signin(
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		//reason to body
+
+		fmt.Printf("tokener err: %+v", err)
 		return
 	}
 

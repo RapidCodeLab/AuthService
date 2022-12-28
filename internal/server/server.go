@@ -13,13 +13,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	SigninPath       = "/auth/signin"
-	SignupPath       = "/auth/signup"
-	RefreshTokenPath = "/auth/refresh"
-	SignoutPath      = "/auth/signout"
-)
-
 type server struct {
 	http         *http.Server
 	grpc         *grpc.Server
@@ -46,16 +39,16 @@ func (s *server) Start(ctx context.Context) (err error) {
 	//http server start
 	r := mux.NewRouter()
 
-	r.HandleFunc(SigninPath, func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc(handlers.SigninPath, func(w http.ResponseWriter, r *http.Request) {
 		handlers.Signin(w, r, s.jwtTokener, s.userService)
 	})
 
-	r.HandleFunc(SignupPath, func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc(handlers.SignupPath, func(w http.ResponseWriter, r *http.Request) {
 		handlers.Signup(w, r, s.userService)
 	})
 
-	r.HandleFunc(RefreshTokenPath, handlers.RefreshToken)
-	r.HandleFunc(SignoutPath, handlers.Logout)
+	r.HandleFunc(handlers.RefreshTokenPath, handlers.RefreshToken)
+	r.HandleFunc(handlers.SignoutPath, handlers.Logout)
 
 	s.http = &http.Server{
 		Handler: r,
