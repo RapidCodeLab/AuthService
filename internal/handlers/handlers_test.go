@@ -56,4 +56,35 @@ func TestSignin(t *testing.T) {
 }
 
 func TestSignup(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+	c := mockconfigurator.New()
+
+	us, err := mockuserservice.New(ctx, c)
+	assert.Nil(err)
+
+	userDTO := handlers.SignupUserDTO{
+		Email:    "test@test.com",
+		Password: "qwerty",
+		Role:     0,
+	}
+
+	payload, err := json.Marshal(userDTO)
+	assert.Nil(err)
+
+	body := bytes.NewReader(payload)
+
+	req, err := http.NewRequest(http.MethodPost, handlers.SignupPath, body)
+	res := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			handlers.Signup(w, r, us)
+		})
+
+	handler.ServeHTTP(res, req)
+
+	assert.Equal(res.Code, http.StatusCreated)
+
 }
