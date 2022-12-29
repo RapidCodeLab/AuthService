@@ -74,9 +74,6 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 		"token":         userToken.String(),
 		"refresh_token": refreshToken.String(),
 	})
-	if err != nil {
-		return
-	}
 
 	return
 }
