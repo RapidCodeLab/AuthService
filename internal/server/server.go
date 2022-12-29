@@ -47,7 +47,9 @@ func (s *server) Start(ctx context.Context) (err error) {
 		handlers.Signup(w, r, s.userService)
 	})
 
-	r.HandleFunc(handlers.RefreshTokenPath, handlers.RefreshToken)
+	r.HandleFunc(handlers.RefreshTokenPath, func(w http.ResponseWriter, r *http.Request) {
+		handlers.RefreshToken(w, r, s.jwtTokener)
+	})
 	r.HandleFunc(handlers.SignoutPath, handlers.Logout)
 
 	s.http = &http.Server{

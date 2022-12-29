@@ -4,7 +4,7 @@ import "context"
 
 type JWTokener interface {
 	NewJWT(User) ([]byte, error)
-	RefreshJWT(RefreshToken) ([]byte, error)
+	RefreshJWT(context.Context, RefreshToken) ([]byte, error)
 	GetPublicKey() []byte
 	GetRefreshToken(context.Context, RefreshToken) (User, error)
 	SetRefreshToken(context.Context, RefreshToken, User) error

@@ -28,7 +28,7 @@ type JWTUserClaims struct {
 type tokener struct {
 	jwtTokenBuilder *jwt.Builder
 	jwtSigner       jwt.Signer
-	PublicKey       []byte
+	PublicKey       *ecdsa.PublicKey
 	rtStorage       RefreshTokenStorage
 }
 
@@ -57,7 +57,7 @@ func New(s RefreshTokenStorage) (t *tokener, err error) {
 }
 
 func (t *tokener) GetPublicKey() []byte {
-	return t.PublicKey
+	return elliptic.Marshal(elliptic.P256(), t.PublicKey.X, t.PublicKey.Y)
 }
 
 func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
@@ -81,9 +81,27 @@ func (t *tokener) NewJWT(u interfaces.User) (r []byte, err error) {
 	return
 }
 
-func (t *tokener) RefreshJWT(rt interfaces.RefreshToken) (r []byte, err error) {
+func (t *tokener) RefreshJWT(ctx context.Context,
+	rt interfaces.RefreshToken) (r []byte, err error) {
 
-	return
+	defer t.DeleteRefreshToken(ctx, rt)
+
+	_, err = veryfyRefreshToken(rt.RefreshToken, t.PublicKey)
+	if err != nil {
+		return
+	}
+
+	user, err := t.rtStorage.GetValueByKey(ctx, string(rt.RefreshToken))
+	if err != nil {
+		return
+	}
+	var u interfaces.User
+	err = json.Unmarshal(user, &u)
+	if err != nil {
+		return
+	}
+
+	return t.NewJWT(u)
 }
 
 func (t *tokener) GetRefreshToken(
@@ -128,14 +146,13 @@ func (t *tokener) tokenBuilderUpdate() (err error) {
 		return
 	}
 
-	publicKey := privateKey.PublicKey
 	signer, err := jwt.NewSignerES(jwt.ES256, privateKey)
 	if err != nil {
 		return
 	}
 	t.jwtSigner = signer
 	t.jwtTokenBuilder = jwt.NewBuilder(signer)
-	t.PublicKey = elliptic.Marshal(&publicKey, publicKey.X, publicKey.Y)
+	t.PublicKey = &privateKey.PublicKey
 	return
 }
 
@@ -163,4 +180,14 @@ func buildRefreshJWTToken(jwtBuilder *jwt.Builder) (
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 	}
 	return jwtBuilder.Build(claims)
+}
+
+func veryfyRefreshToken(token []byte,
+	publicKey *ecdsa.PublicKey) (t *jwt.Token, err error) {
+
+	alg, err := jwt.NewVerifierES(jwt.ES256, publicKey)
+	if err != nil {
+		return
+	}
+	return jwt.Parse(token, alg)
 }

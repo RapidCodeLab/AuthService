@@ -91,7 +91,6 @@ func Signup(
 	}
 
 	//create user
-	//get user from UserService gRPC
 	u, err := userService.CreateUser(r.Context(),
 		signupUserDTO.Email,
 		signupUserDTO.Password,
@@ -115,10 +114,39 @@ func Signup(
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		//reason to body
-		return
 	}
 
 }
 
-func RefreshToken(w http.ResponseWriter, r *http.Request) {}
-func Logout(w http.ResponseWriter, r *http.Request)       {}
+func RefreshToken(w http.ResponseWriter,
+	r *http.Request,
+	jwtTokener interfaces.JWTokener) {
+
+	var rt interfaces.RefreshToken
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&rt)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		//reason to body
+		return
+	}
+
+	token, err := jwtTokener.RefreshJWT(r.Context(), rt)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Content-Type", "application/json")
+	_, err = w.Write(token)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		//reason to body
+	}
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {}
