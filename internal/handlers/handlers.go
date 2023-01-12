@@ -2,11 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/RapidCodeLab/AuthService/internal/interfaces"
 )
+
+type ErrorReason struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 const (
 	SigninPath       = "/auth/signin"
@@ -32,15 +36,27 @@ func Signin(
 	jwTokener interfaces.JWTokener,
 	userService interfaces.UserService) {
 
-	var signinUserDTO SigninUserDTO
+	var (
+		signinUserDTO SigninUserDTO
+		errorReason   ErrorReason
+	)
+
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	err := decoder.Decode(&signinUserDTO)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		//reason to body
-		fmt.Printf("decoder err: %+v", err)
+		errorReason.Code = http.StatusBadRequest
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		return
 	}
 
@@ -50,18 +66,32 @@ func Signin(
 		signinUserDTO.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
-
-		fmt.Printf("user service err: %+v", err)
-		//reason to body
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		return
 	}
 
 	token, err := jwTokener.NewJWT(u)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
-		//reason to body
-
-		fmt.Printf("tokener err: %+v", err)
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		return
 	}
 
@@ -70,7 +100,16 @@ func Signin(
 	_, err = w.Write(token)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
-		//reason to body
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 	}
 }
 
@@ -79,14 +118,26 @@ func Signup(
 	r *http.Request,
 	userService interfaces.UserService) {
 
-	var signupUserDTO SignupUserDTO
+	var (
+		signupUserDTO SignupUserDTO
+		errorReason   ErrorReason
+	)
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	err := decoder.Decode(&signupUserDTO)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		//reason to body
+		errorReason.Code = http.StatusBadRequest
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		return
 	}
 
@@ -97,6 +148,16 @@ func Signup(
 		signupUserDTO.Role)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		//reason to body
 		return
 	}
@@ -113,6 +174,16 @@ func Signup(
 	err = enc.Encode(res)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		//reason to body
 	}
 
@@ -122,7 +193,10 @@ func RefreshToken(w http.ResponseWriter,
 	r *http.Request,
 	jwtTokener interfaces.JWTokener) {
 
-	var rt interfaces.RefreshToken
+	var (
+		rt          interfaces.RefreshToken
+		errorReason ErrorReason
+	)
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -130,6 +204,16 @@ func RefreshToken(w http.ResponseWriter,
 	err := decoder.Decode(&rt)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		errorReason.Code = http.StatusBadRequest
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		//reason to body
 		return
 	}
@@ -137,6 +221,16 @@ func RefreshToken(w http.ResponseWriter,
 	token, err := jwtTokener.RefreshJWT(r.Context(), rt)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
+		errorReason.Code = http.StatusUnauthorized
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		return
 	}
 
@@ -145,6 +239,16 @@ func RefreshToken(w http.ResponseWriter,
 	_, err = w.Write(token)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
+		errorReason.Code = http.StatusBadGateway
+		errorReason.Message = err.Error()
+		body, err := json.Marshal(errorReason)
+		if err != nil {
+			//log error
+		}
+		_, err = w.Write(body)
+		if err != nil {
+			//log error
+		}
 		//reason to body
 	}
 }
