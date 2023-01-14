@@ -52,7 +52,12 @@ type Configurator interface {
 	GetGRPCUserServiceAddr() string
 }
 
-type Logger interface{}
+type Logger interface {
+	Infof(format string, args ...any)
+	Debugf(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+}
 
 type EventProducer interface {
 	Send(msg []byte)

@@ -31,6 +31,7 @@ type SignupUserDTO struct {
 }
 
 func Signin(
+	l interfaces.Logger,
 	w http.ResponseWriter,
 	r *http.Request,
 	jwTokener interfaces.JWTokener,
@@ -47,8 +48,9 @@ func Signin(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadRequest, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("decode: %s", err.Error())
 		return
 	}
 
@@ -59,8 +61,9 @@ func Signin(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("userService: %s", err.Error())
 		return
 	}
 
@@ -68,8 +71,9 @@ func Signin(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("jwtTokener: %s", err.Error())
 		return
 	}
 
@@ -79,12 +83,14 @@ func Signin(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("write: %s", err.Error())
 	}
 }
 
 func Signup(
+	l interfaces.Logger,
 	w http.ResponseWriter,
 	r *http.Request,
 	userService interfaces.UserService) {
@@ -99,8 +105,9 @@ func Signup(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("decode: %s", err.Error())
 		return
 	}
 
@@ -112,8 +119,9 @@ func Signup(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("userService: %s", err.Error())
 		return
 	}
 
@@ -130,13 +138,16 @@ func Signup(
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("encode: %s", err.Error())
 	}
 
 }
 
-func RefreshToken(w http.ResponseWriter,
+func RefreshToken(
+	l interfaces.Logger,
+	w http.ResponseWriter,
 	r *http.Request,
 	jwtTokener interfaces.JWTokener) {
 
@@ -151,8 +162,9 @@ func RefreshToken(w http.ResponseWriter,
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("decode: %s", err.Error())
 		return
 	}
 
@@ -160,8 +172,9 @@ func RefreshToken(w http.ResponseWriter,
 	if err != nil {
 		err = writeErrorReason(w, http.StatusUnauthorized, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("jwtTokener: %s", err.Error())
 		return
 	}
 
@@ -171,8 +184,9 @@ func RefreshToken(w http.ResponseWriter,
 	if err != nil {
 		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log err
+			l.Errorf("writeErrorReason: %s", err.Error())
 		}
+		l.Errorf("write: %s", err.Error())
 	}
 }
 
