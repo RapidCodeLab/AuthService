@@ -38,7 +38,6 @@ func Signin(
 
 	var (
 		signinUserDTO SigninUserDTO
-		errorReason   ErrorReason
 	)
 
 	decoder := json.NewDecoder(r.Body)
@@ -46,16 +45,9 @@ func Signin(
 
 	err := decoder.Decode(&signinUserDTO)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		errorReason.Code = http.StatusBadRequest
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadRequest, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 		return
 	}
@@ -65,32 +57,18 @@ func Signin(
 		signinUserDTO.Email,
 		signinUserDTO.Password)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 		return
 	}
 
 	token, err := jwTokener.NewJWT(u)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 		return
 	}
@@ -99,16 +77,9 @@ func Signin(
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(token)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 	}
 }
@@ -120,23 +91,15 @@ func Signup(
 
 	var (
 		signupUserDTO SignupUserDTO
-		errorReason   ErrorReason
 	)
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	err := decoder.Decode(&signupUserDTO)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		errorReason.Code = http.StatusBadRequest
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 		return
 	}
@@ -147,18 +110,10 @@ func Signup(
 		signupUserDTO.Password,
 		signupUserDTO.Role)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
+			//log err
 		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
-		}
-		//reason to body
 		return
 	}
 
@@ -173,18 +128,10 @@ func Signup(
 	enc := json.NewEncoder(w)
 	err = enc.Encode(res)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
+			//log err
 		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
-		}
-		//reason to body
 	}
 
 }
@@ -194,8 +141,7 @@ func RefreshToken(w http.ResponseWriter,
 	jwtTokener interfaces.JWTokener) {
 
 	var (
-		rt          interfaces.RefreshToken
-		errorReason ErrorReason
+		rt interfaces.RefreshToken
 	)
 
 	decoder := json.NewDecoder(r.Body)
@@ -203,33 +149,18 @@ func RefreshToken(w http.ResponseWriter,
 
 	err := decoder.Decode(&rt)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		errorReason.Code = http.StatusBadRequest
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
+			//log err
 		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
-		}
-		//reason to body
 		return
 	}
 
 	token, err := jwtTokener.RefreshJWT(r.Context(), rt)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		errorReason.Code = http.StatusUnauthorized
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusUnauthorized, err.Error())
 		if err != nil {
-			//log error
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
+			//log err
 		}
 		return
 	}
@@ -238,19 +169,30 @@ func RefreshToken(w http.ResponseWriter,
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(token)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		errorReason.Code = http.StatusBadGateway
-		errorReason.Message = err.Error()
-		body, err := json.Marshal(errorReason)
+		err = writeErrorReason(w, http.StatusBadGateway, err.Error())
 		if err != nil {
-			//log error
+			//log err
 		}
-		_, err = w.Write(body)
-		if err != nil {
-			//log error
-		}
-		//reason to body
 	}
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {}
+
+func writeErrorReason(w http.ResponseWriter,
+	status int,
+	message string) error {
+	var errorReason ErrorReason
+
+	w.WriteHeader(status)
+	errorReason.Code = status
+	errorReason.Message = message
+	body, err := json.Marshal(errorReason)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
