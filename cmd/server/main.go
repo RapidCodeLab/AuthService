@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"github.com/RapidCodeLab/AuthService/internal/server"
+	"github.com/RapidCodeLab/AuthService/pkg/configurator"
 	jwttokener "github.com/RapidCodeLab/AuthService/pkg/jwt-tokener"
-	mockconfigurator "github.com/RapidCodeLab/AuthService/pkg/mocks/configurator"
 	mockskvtorage "github.com/RapidCodeLab/AuthService/pkg/mocks/kv-storage"
 	mockuserservice "github.com/RapidCodeLab/AuthService/pkg/mocks/user-service"
 )
@@ -19,7 +19,10 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 
-	c := mockconfigurator.New()
+	c, err := configurator.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	kv := mockskvtorage.New()
 
