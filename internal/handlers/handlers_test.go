@@ -11,6 +11,7 @@ import (
 	jwttokener "github.com/RapidCodeLab/AuthService/pkg/jwt-tokener"
 	mockconfigurator "github.com/RapidCodeLab/AuthService/pkg/mocks/configurator"
 	mockskvtorage "github.com/RapidCodeLab/AuthService/pkg/mocks/kv-storage"
+	"github.com/RapidCodeLab/AuthService/pkg/mocks/logger"
 	mockuserservice "github.com/RapidCodeLab/AuthService/pkg/mocks/user-service"
 
 	"github.com/RapidCodeLab/AuthService/internal/handlers"
@@ -45,9 +46,10 @@ func TestSignin(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, handlers.SigninPath, body)
 	res := httptest.NewRecorder()
 
+	l := &logger.Logger{}
 	handler := http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			handlers.Signin(w, r, jwtTokener, us)
+			handlers.Signin(l, w, r, jwtTokener, us)
 		})
 
 	handler.ServeHTTP(res, req)
@@ -78,9 +80,10 @@ func TestSignup(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, handlers.SignupPath, body)
 	res := httptest.NewRecorder()
 
+	l := &logger.Logger{}
 	handler := http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			handlers.Signup(w, r, us)
+			handlers.Signup(l, w, r, us)
 		})
 
 	handler.ServeHTTP(res, req)
